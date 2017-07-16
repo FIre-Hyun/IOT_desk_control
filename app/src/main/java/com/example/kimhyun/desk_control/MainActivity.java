@@ -17,15 +17,16 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        button.findViewById(R.id.button);
+        button = (Button) findViewById(R.id.button);
 
-        et.findViewById(R.id.editText);
+        et = (EditText) findViewById(R.id.editText);
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
                 Intent intent = new Intent(getApplicationContext(), ClassActivity.class);
+                intent.putExtra("number", et.getText().toString());
                 startActivity(intent);
             }
         });
