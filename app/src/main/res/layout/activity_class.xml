@@ -47,7 +47,7 @@
         app:layout_constraintTop_toTopOf="@+id/btn3" />
 
     <TextView
-        android:id="@+id/tv_naver_html"
+        android:id="@+id/tv_html"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="8dp"

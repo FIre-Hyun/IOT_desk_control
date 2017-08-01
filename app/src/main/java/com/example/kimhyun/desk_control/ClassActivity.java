@@ -10,39 +10,32 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
-import java.net.Socket;
 import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLEncoder;
 
 public class ClassActivity extends AppCompatActivity implements View.OnClickListener{
 
     Button [] btn = new Button[4];
 
-    private String html = "";
-    private Handler mHandler;
+    TextView tvHtml;
 
-    private Socket socket;
-    TextView tvNaverHtml;
 
-    private BufferedReader networkReader;
-    private BufferedWriter networkWriter;
-
-    private String ip = "192.168.1.4"; // IP
+    private String ip = "192.168.1.5"; // IP
     private int port = 3000; // PORT번호
 
-    String mJsonString;
-
-    String naverHtml;
+    String Html;
 
     String student_num;
 
     String [] desk = new String[10];
+
+    int desk_num = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,26 +61,24 @@ public class ClassActivity extends AppCompatActivity implements View.OnClickList
         new Thread() {
             public void run() {
                 Log.d("Thread", "Thread");
-                naverHtml = getNaverHtml();
+                Html = getHtml();
 
                 Bundle bun = new Bundle();
-                bun.putString("NAVER_HTML", naverHtml);
+                bun.putString("HTML", Html);
                 Message msg = handler.obtainMessage();
                 msg.setData(bun);
                 handler.sendMessage(msg);
             }
         }.start();
 
-        tvNaverHtml = (TextView)this.findViewById(R.id.tv_naver_html);
-        //tvNaverHtml.setText(naverHtml);
+        tvHtml = (TextView)this.findViewById(R.id.tv_html);
     }
 
-    private String getNaverHtml(){
-        naverHtml = "";
+    private String getHtml(){
+        Html = "";
 
-
-        Log.d("getNaverHtml", "getNaverHtml");
         URL url =null;
+
         HttpURLConnection http = null;
         InputStreamReader isr = null;
         BufferedReader br = null;
@@ -104,8 +95,8 @@ public class ClassActivity extends AppCompatActivity implements View.OnClickList
 
             String str = null;
             while ((str = br.readLine()) != null) {
-                naverHtml += str + "\n";
-                Log.d("naver", naverHtml);
+                Html += str + "\n";
+                Log.d("html", Html);
             }
 
             Log.d("2222", "2222");
@@ -128,14 +119,14 @@ public class ClassActivity extends AppCompatActivity implements View.OnClickList
             }
         }
 
-        return naverHtml;
+        return Html;
     }
 
     Handler handler = new Handler() {
         public void handleMessage(Message msg) {
             Bundle bun = msg.getData();
-            String naverHtml = bun.getString("NAVER_HTML");
-            tvNaverHtml.setText(naverHtml);
+            String Html = bun.getString("HTML");
+            tvHtml.setText(Html);
         }
     };
 
@@ -150,8 +141,8 @@ public class ClassActivity extends AppCompatActivity implements View.OnClickList
                     public void run() {
 
                         for(int i = 0; i < 4; i++) {
-                            Log.d("for문", String.valueOf(i));
-                            desk[i] = String.valueOf(naverHtml.charAt(i+11));
+                            desk[i] = String.valueOf(Html.charAt(i+11));
+                            Log.d("setButton" + i, desk[i]);
                             if (desk[i].equals("0"))
                                 btn[i].setText("off");
                             else
@@ -165,92 +156,105 @@ public class ClassActivity extends AppCompatActivity implements View.OnClickList
 
     }
 
-
     @Override
     public void onClick(View v) {
 
+        switch (v.getId()) {
+            case R.id.btn1:
+                desk_num = 0;
+                break;
+            case R.id.btn2:
+                desk_num = 1;
+                break;
+            case R.id.btn3:
+                desk_num = 2;
+                break;
+            case R.id.btn4:
+                desk_num = 3;
+                break;
+
+        }
         new Thread() {
             public void run() {
-                String naverHtml = postdesk();
+                try {
+                    String Clicked_Desk = postdesk(desk_num);
+                    Log.d("Clicked", Clicked_Desk);
+                    if(desk[desk_num].equals("0"))
+                        desk[desk_num] = "1";
+                    else
+                        desk[desk_num] = "0";
+//                    btn[Integer.parseInt(Clicked_Desk)].setText("ON");
+                    Log.d("desk", desk[0]+desk[1]+desk[2]+desk[3]);
+
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Log.d("제발", "짠");
+                            for(int i = 0; i < 4; i++) {
+                                Log.d("setButton" + i, desk[i]);
+                                if (desk[i].equals("0"))
+                                    btn[i].setText("off");
+                                else
+                                    btn[i].setText("on");
+                            }
+                        }
+                    });
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }.start();
 
 
     }
 
-    private String postdesk(){
-        String naverHtml = "";
+    private String postdesk(int desk_num) throws IOException {
 
         URL url =null;
+
         HttpURLConnection http = null;
         InputStreamReader isr = null;
         BufferedReader br = null;
 
-        try{
-            url = new URL("http://192.168.1.4:3000");
-            //url = new URL("http://jun123101.cafe24.com");
-            Log.d("post", "start");
-            http = (HttpURLConnection) url.openConnection();
-            Log.d("post", "connect");
-            //start
-            String data = URLEncoder.encode("student_num", "UTF-8") + "="
-                    + URLEncoder.encode(student_num, "UTF-8");
-            data += "&" + URLEncoder.encode("table_num", "UTF-8") + "="
-                    + URLEncoder.encode("1", "UTF-8");
+        StringBuilder sb = new StringBuilder();
 
-            Log.d("post", data);
-            URLConnection conn = url.openConnection();
+        try {
+            url = new URL("http://" + ip + ":" + port + "/reservation");
 
-            conn.setDoOutput(true);
-            OutputStreamWriter wr =
-                    new OutputStreamWriter(conn.getOutputStream());
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            con.setDoOutput(true);
+            con.setRequestMethod("POST");
+            con.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            con.setRequestProperty("Content-Type", "application/json");
+            //OutputStream os = con.getOutputStream();
 
-            Log.d("post", "write전");
-            wr.write(data);
-            wr.flush();
-            Log.d("post", "write후");
+            DataOutputStream os = new DataOutputStream(con.getOutputStream());
 
-            BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(conn.getInputStream()));
+            JSONObject jsonParam = new JSONObject();
+            jsonParam.put("student_num", student_num);
+            jsonParam.put("desk_num", desk_num);
 
-            StringBuilder sb = new StringBuilder();
-            String line;
-            Log.d("post", "00000");
+            Log.d("jsonParam", jsonParam.toString());
 
-            while ((line = reader.readLine()) != null) {
-                sb.append(line);
+//            os.writeBytes(URLEncoder.encode("current="+jsonParam.toString(), "UTF-8"));
+            os.writeBytes(jsonParam.toString());
+
+//            os.writeUTF(URLEncoder.encode("current="+jsonParam.toString(), "UTF-8"));
+            os.flush();
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream(), "utf-8"));
+            String line = null;
+
+            while((line = reader.readLine()) != null){
+                sb.append(line + '\n');
             }
-
-            Log.d("post", "11111");
+            Log.d("sb", sb.toString());
+//            btn[desk_num].setText("ON");
 
             reader.close();
-
-
-            ///end
-
-
-
-
-
-
-
-
-
-
-
-
-
-            http.setConnectTimeout(3*1000);
-            http.setReadTimeout(3*1000);
-
-            isr = new InputStreamReader(http.getInputStream());
-            br = new BufferedReader(isr);
-
-            String str = null;
-            while ((str = br.readLine()) != null) {
-                naverHtml += str + "\n";
-            }
-
+            os.close();
         }catch(Exception e){
             Log.e("Exception", e.toString());
         }finally{
@@ -267,131 +271,12 @@ public class ClassActivity extends AppCompatActivity implements View.OnClickList
             }
         }
 
-        return naverHtml;
+
+        return sb.toString();
+
+
+
     }
-//
-//    public String sendHttpWithMsg(String url){
-//
-////기본적인 설정
-//
-//        DefaultHttpClient client = new DefaultHttpClient();
-//
-//        HttpPost post = new HttpPost(url);
-//
-//        HttpParams params = client.getParams();
-//
-//        HttpConnectionParams.setConnectionTimeout(params, 3000);
-//
-//        HttpConnectionParams.setSoTimeout(params, 3000);
-//
-//        post.setHeader("Content-type", "application/json; charset=utf-8");
-//
-//
-//
-//// JSON OBject를 생성하고 데이터를 입력합니다.
-//
-////여기서 처음에 봤던 데이터가 만들어집니다.
-//
-//        JSONObject jObj = new JSONObject();
-//
-//        try {
-//
-//            jObj.put("name", "hong");
-//
-//            jObj.put("phone", "000-0000");
-//
-//
-//
-//        } catch (JSONException e1) {
-//
-//            e1.printStackTrace();
-//
-//        }
-//
-//
-//
-//
-//
-//
-//
-//        try {
-//
-//// JSON을 String 형변환하여 httpEntity에 넣어줍니다.
-//
-//            StringEntity se;
-//
-//            se = new StringEntity(jObj.toString());
-//
-//            HttpEntity he=se;
-//
-//            post.setEntity(he);
-//
-//
-//
-//        } catch (UnsupportedEncodingException e1) {
-//
-//            e1.printStackTrace();	}
-//
-//
-//
-//
-//
-//        try {
-//
-////httpPost 를 서버로 보내고 응답을 받습니다.
-//
-//            HttpResponse response = client.execute(post);
-//
-//// 받아온 응답으로부터 내용을 받아옵니다.
-//
-//// 단순한 string으로 읽어와 그내용을 리턴해줍니다.
-//
-//            BufferedReader bufReader =
-//
-//                    new BufferedReader(new InputStreamReader(
-//
-//                            response.getEntity().getContent(),
-//
-//                            "utf-8"
-//
-//                    )
-//
-//                    );
-//
-//
-//
-//            String line = null;
-//
-//            String result = "";
-//
-//
-//
-//            while ((line = bufReader.readLine())!=null){
-//
-//                result +=line;
-//
-//            }
-//
-//            return result;
-//
-//
-//
-//        } catch (ClientProtocolException e) {
-//
-//            e.printStackTrace();
-//
-//            return "Error"+e.toString();
-//
-//        } catch (IOException e) {
-//
-//            e.printStackTrace();
-//
-//            return "Error"+e.toString();
-//
-//        }
-//
-//    }
-//
 
 
 }
