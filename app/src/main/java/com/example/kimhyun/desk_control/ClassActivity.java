@@ -26,7 +26,7 @@ public class ClassActivity extends AppCompatActivity implements View.OnClickList
     TextView tvHtml;
 
 
-    private String ip = "192.168.1.5"; // IP
+    private String ip = "192.168.219.105"; // IP
     private int port = 3000; // PORT번호
 
     String Html;
@@ -143,10 +143,23 @@ public class ClassActivity extends AppCompatActivity implements View.OnClickList
                         for(int i = 0; i < 4; i++) {
                             desk[i] = String.valueOf(Html.charAt(i+11));
                             Log.d("setButton" + i, desk[i]);
-                            if (desk[i].equals("0"))
-                                btn[i].setText("off");
-                            else
-                                btn[i].setText("on");
+                            if (desk[i].equals("c")) {  //  비어있음
+                                btn[i].setText("Empty");
+                                btn[i].setBackgroundColor(getApplicationContext().getResources().getColor(R.color.white));
+                            }
+                            else if(desk[i].equals("b")){   // 의자 On
+                                btn[i].setText(student_num);
+                                btn[i].setBackgroundColor(getApplicationContext().getResources().getColor(R.color.green));
+                            }
+                            else if(desk[i].equals("a")){
+                                btn[i].setText(student_num);
+                                btn[i].setBackgroundColor(getApplicationContext().getResources().getColor(R.color.colorAccent));
+                            }
+                            else{
+                                btn[i].setText("Error");
+                                btn[i].setBackgroundColor(getApplicationContext().getResources().getColor(R.color.colorPrimary));
+
+                            }
                         }
                     }
                 });
@@ -177,12 +190,12 @@ public class ClassActivity extends AppCompatActivity implements View.OnClickList
         new Thread() {
             public void run() {
                 try {
-                    String Clicked_Desk = postdesk(desk_num);
+                    String Clicked_Desk = postdesk(desk_num, "a");
                     Log.d("Clicked", Clicked_Desk);
                     if(desk[desk_num].equals("0"))
                         desk[desk_num] = "1";
                     else
-                        desk[desk_num] = "0";
+                        desk[desk_num] = "c";
 //                    btn[Integer.parseInt(Clicked_Desk)].setText("ON");
                     Log.d("desk", desk[0]+desk[1]+desk[2]+desk[3]);
 
@@ -191,13 +204,23 @@ public class ClassActivity extends AppCompatActivity implements View.OnClickList
                         @Override
                         public void run() {
                             Log.d("제발", "짠");
-                            for(int i = 0; i < 4; i++) {
-                                Log.d("setButton" + i, desk[i]);
-                                if (desk[i].equals("0"))
-                                    btn[i].setText("off");
-                                else
-                                    btn[i].setText("on");
-                            }
+                                Log.d("setButton" + desk_num, desk[desk_num]);
+                                if (desk[desk_num].equals("c")) {
+                                    btn[desk_num].setText("Empty");
+                                    btn[desk_num].setBackgroundColor(getApplicationContext().getResources().getColor(R.color.white));
+                                }
+                                else if(desk[desk_num].equals("b")) {
+                                    btn[desk_num].setText(student_num);
+                                    btn[desk_num].setBackgroundColor(getApplicationContext().getResources().getColor(R.color.green));
+                                }
+                                else if(desk[desk_num].equals("c")) {
+                                    btn[desk_num].setText(student_num);
+                                    btn[desk_num].setBackgroundColor(getApplicationContext().getResources().getColor(R.color.colorAccent));
+                                }
+                                else{
+                                    btn[desk_num].setText("Error");
+                                    btn[desk_num].setBackgroundColor(getApplicationContext().getResources().getColor(R.color.colorPrimary));
+                                }
                         }
                     });
 
@@ -210,7 +233,7 @@ public class ClassActivity extends AppCompatActivity implements View.OnClickList
 
     }
 
-    private String postdesk(int desk_num) throws IOException {
+    private String postdesk(int desk_num, String desk_kind) throws IOException {
 
         URL url =null;
 
@@ -235,6 +258,7 @@ public class ClassActivity extends AppCompatActivity implements View.OnClickList
             JSONObject jsonParam = new JSONObject();
             jsonParam.put("student_num", student_num);
             jsonParam.put("desk_num", desk_num);
+            jsonParam.put("desk_kind", desk_kind);
 
             Log.d("jsonParam", jsonParam.toString());
 
