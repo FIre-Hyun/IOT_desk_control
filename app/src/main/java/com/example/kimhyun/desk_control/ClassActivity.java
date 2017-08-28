@@ -208,20 +208,14 @@ public class ClassActivity extends AppCompatActivity implements View.OnClickList
 
                         try {
                             JSONObject obj = new JSONObject(Html);
-                            desk[0] = obj.getString("desk0");
-                            desk[1] = obj.getString("desk1");
-                            desk[2] = obj.getString("desk2");
-                            desk[3] = obj.getString("desk3");
-                            Log.d("jsontest", desk[0] + desk[1] + desk[2] + desk[3]);
+                            for(int i = 0; i < 16; i++) {
+                                desk[i] = obj.getString("desk"+i);
+                                checked_num[i] = obj.getString("number"+i);
+                                Log.d("jsontest", desk[0] + desk[1] + desk[2] + desk[3]);
+                            }
 
-                            checked_num[0] = obj.getString("number0");
-                            checked_num[1] = obj.getString("number1");
-                            checked_num[2] = obj.getString("number1");
-                            checked_num[3] = obj.getString("number1");
-
-                            for (int i = 0; i < 4; i++) {
+                            for (int i = 0; i < 16; i++) {
                                 if (desk[i].equals("c")) {
-                                    student_sum--;
                                     btn[i].setText("Empty");
                                     btn[i].setBackgroundColor(getApplicationContext().getResources().getColor(R.color.white));
                                 } else if (desk[i].equals("b")) {
@@ -238,17 +232,11 @@ public class ClassActivity extends AppCompatActivity implements View.OnClickList
                                 }
 
                             }
-                            for(int i = 4; i < 16; i++){
-                                desk[i] = "c";
-                                btn[i].setText("Empty");
-                                btn[i].setBackgroundColor(getApplicationContext().getResources().getColor(R.color.white));
-                            }
+
                             tv_sum.setText("출석한 학생 수 : " + student_sum);
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
-
-                        desk[4] = "d";
 
                         Log.d("desk", desk[0] + desk[1] + desk[2] + desk[3] + desk[4]);
 
@@ -322,14 +310,8 @@ public class ClassActivity extends AppCompatActivity implements View.OnClickList
                 Log.d("1111", "1나왓당");
                 Log.d("desk2", desk[0] + desk[1] + desk[2] + desk[3] + desk[4]);
 
-                if (desk_num >= 4) {
-                    Log.d("올레", String.valueOf(desk_num));
-                    if(desk[desk_num] == "c")
-                        desk[desk_num] = desk_kind;
-                    else
-                        desk[desk_num] = "c";
-                }
-                else if (desk[desk_num].equals("c")) {        //추가코딩 해야함.. Empty이면 선택하는부분
+
+                if (desk[desk_num].equals("c")) {        //추가코딩 해야함.. Empty이면 선택하는부분
 
 
                     Log.d("1111", "1나왓당");
@@ -365,6 +347,7 @@ public class ClassActivity extends AppCompatActivity implements View.OnClickList
                         Log.d("제발", "짠");
                         Log.d("setButton" + desk_num, desk[desk_num]);
                         if (desk[desk_num].equals("c")) {
+                            student_sum--;
                             btn[desk_num].setText("Empty");
                             btn[desk_num].setBackgroundColor(getApplicationContext().getResources().getColor(R.color.white));
                         } else if (desk[desk_num].equals("b")) {
