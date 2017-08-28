@@ -4,10 +4,13 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.annotation.IdRes;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import org.json.JSONObject;
@@ -21,21 +24,29 @@ import java.net.URL;
 
 public class ClassActivity extends AppCompatActivity implements View.OnClickListener{
 
-    Button [] btn = new Button[4];
+    Button [] btn = new Button[20];
+
+    Button [] test_btn = new Button[20];
 
     TextView tvHtml;
 
 
-    private String ip = "192.168.219.105"; // IP
+    private String ip = "192.168.0.32"; // IP
     private int port = 3000; // PORT번호
 
     String Html;
 
     String student_num;
 
-    String [] desk = new String[10];
+    String desk_kind;
+
+    String [] desk = new String[20];
 
     int desk_num = 0;
+
+    RadioButton radio_desk, radio_chair;
+
+    RadioGroup radiogroup;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +62,51 @@ public class ClassActivity extends AppCompatActivity implements View.OnClickList
         btn[1].setOnClickListener(this);
         btn[2].setOnClickListener(this);
         btn[3].setOnClickListener(this);
+
+
+        test_btn[0] = (Button) findViewById(R.id.test0);
+        test_btn[1] = (Button) findViewById(R.id.test1);
+        test_btn[2] = (Button) findViewById(R.id.test2);
+        test_btn[3] = (Button) findViewById(R.id.test3);
+        test_btn[4] = (Button) findViewById(R.id.test4);
+        test_btn[5] = (Button) findViewById(R.id.test5);
+        test_btn[6] = (Button) findViewById(R.id.test6);
+        test_btn[7] = (Button) findViewById(R.id.test7);
+        test_btn[8] = (Button) findViewById(R.id.test8);
+        test_btn[9] = (Button) findViewById(R.id.test9);
+        test_btn[10] = (Button) findViewById(R.id.test10);
+        test_btn[11] = (Button) findViewById(R.id.test11);
+
+        test_btn[0].setOnClickListener(this);
+        test_btn[1].setOnClickListener(this);
+        test_btn[2].setOnClickListener(this);
+        test_btn[3].setOnClickListener(this);
+        test_btn[4].setOnClickListener(this);
+        test_btn[5].setOnClickListener(this);
+        test_btn[6].setOnClickListener(this);
+        test_btn[7].setOnClickListener(this);
+        test_btn[8].setOnClickListener(this);
+        test_btn[9].setOnClickListener(this);
+        test_btn[10].setOnClickListener(this);
+        test_btn[11].setOnClickListener(this);
+
+        radio_desk = (RadioButton) findViewById(R.id.radio_desk);
+        radio_chair = (RadioButton) findViewById(R.id.radio_chair);
+
+        radiogroup = (RadioGroup) findViewById(R.id.radiogroup);
+
+        desk_kind  = "a";
+
+        radiogroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener(){
+
+            @Override
+            public void onCheckedChanged(RadioGroup group, @IdRes int checkedId) {
+                if(checkedId == R.id.radio_desk)
+                    desk_kind = "a";
+                else
+                    desk_kind = "b";
+            }
+        });
 
         Intent intent = getIntent();
         student_num = intent.getStringExtra("number").toString();
@@ -73,6 +129,7 @@ public class ClassActivity extends AppCompatActivity implements View.OnClickList
 
         tvHtml = (TextView)this.findViewById(R.id.tv_html);
     }
+
 
     private String getHtml(){
         Html = "";
@@ -99,7 +156,6 @@ public class ClassActivity extends AppCompatActivity implements View.OnClickList
                 Log.d("html", Html);
             }
 
-            Log.d("2222", "2222");
 
             showResult();
 
@@ -161,6 +217,16 @@ public class ClassActivity extends AppCompatActivity implements View.OnClickList
 
                             }
                         }
+
+                        for(int i = 0; i < 12; i++){
+                            test_btn[i].setText("Empty");
+                            test_btn[i].setBackgroundColor(getApplicationContext().getResources().getColor(R.color.white));
+                        }
+
+                        desk[4] = "d";
+
+                        Log.d("desk", desk[0]+desk[1]+desk[2]+desk[3] + desk[4]);
+
                     }
                 });
             }
@@ -170,7 +236,7 @@ public class ClassActivity extends AppCompatActivity implements View.OnClickList
     }
 
     @Override
-    public void onClick(View v) {
+    public void onClick(final View v) {
 
         switch (v.getId()) {
             case R.id.btn1:
@@ -185,20 +251,49 @@ public class ClassActivity extends AppCompatActivity implements View.OnClickList
             case R.id.btn4:
                 desk_num = 3;
                 break;
+            default:
+                desk_num = 4;
+                break;
 
         }
         new Thread() {
             public void run() {
-                try {
-                    String Clicked_Desk = postdesk(desk_num, "a");
-                    Log.d("Clicked", Clicked_Desk);
-                    if(desk[desk_num].equals("0"))
-                        desk[desk_num] = "1";
-                    else
-                        desk[desk_num] = "c";
-//                    btn[Integer.parseInt(Clicked_Desk)].setText("ON");
-                    Log.d("desk", desk[0]+desk[1]+desk[2]+desk[3]);
 
+                Log.d("desk2", desk[0]+desk[1]+desk[2]+desk[3] + desk[4]);
+
+                if(desk_num == 4){
+                    test_btn[new Integer(String.valueOf(v.getId()).substring(4))].setText("Empty");
+                    test_btn[new Integer(String.valueOf(v.getId()).substring(4))].setBackgroundColor(getApplicationContext().getResources().getColor(R.color.green));
+                    Log.d("11111", String.valueOf(v.getId()).substring(4));
+                }
+                    else if(desk[desk_num].equals("c") && desk_num != 4) {        //추가코딩 해야함.. Empty이면 선택하는부분
+
+
+                        String Clicked_Desk = null;
+                        try {
+                            Clicked_Desk = postdesk(desk_num, desk_kind);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        Log.d("Clicked", Clicked_Desk);
+
+                        desk[desk_num] = desk_kind;
+                    }
+
+                    else if(!desk[desk_num].equals("c") && desk_num != 4){  // Empty가 아니면
+
+                        String Clicked_Desk = null;
+                        try {
+                            Clicked_Desk = postdesk(desk_num, "c");
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        Log.d("Clicked", Clicked_Desk);
+
+                        desk[desk_num] = "c";
+
+
+                    }
 
                     runOnUiThread(new Runnable() {
                         @Override
@@ -213,7 +308,7 @@ public class ClassActivity extends AppCompatActivity implements View.OnClickList
                                     btn[desk_num].setText(student_num);
                                     btn[desk_num].setBackgroundColor(getApplicationContext().getResources().getColor(R.color.green));
                                 }
-                                else if(desk[desk_num].equals("c")) {
+                                else if(desk[desk_num].equals("a")) {
                                     btn[desk_num].setText(student_num);
                                     btn[desk_num].setBackgroundColor(getApplicationContext().getResources().getColor(R.color.colorAccent));
                                 }
@@ -224,9 +319,6 @@ public class ClassActivity extends AppCompatActivity implements View.OnClickList
                         }
                     });
 
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
             }
         }.start();
 
